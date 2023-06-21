@@ -1,0 +1,38 @@
+table, thead, tbody, th, td, tr {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    color: inherit;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #ddd;
+}
+
+thead {
+    background-color: #f2f2f2;
+}
+
+tbody {
+    background-color: #fff;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tbody tr {
+    cursor: pointer;
+}
+
+th, td {
+    text-align: left;
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+}
