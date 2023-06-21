@@ -7,7 +7,9 @@ autoGenerateColumns: Bool // if true, columns will be generated from data keys, 
 
 # TODO
 - [x] pagination
-- [ ] search
+- [x] search
+- [x] style serach
+- [ ] sticky header
 - [ ] sort columns
 - [ ] filter columns
 - [ ] 
@@ -19,3 +21,6 @@ autoGenerateColumns: Bool // if true, columns will be generated from data keys, 
 
 
 handle nested data
+
+
+

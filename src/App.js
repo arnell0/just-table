@@ -2,23 +2,85 @@ import React from 'react';
 import './Table.css'
 import { Virtuoso } from 'react-virtuoso'
 
+function SearchBox(props) {
+  const { values, setValues } = props
+
+  const [search, setSearch] = React.useState('')
+  const [resultLength, setResultLength] = React.useState(values.length)
+
+  const handleSearch = (e) => {
+    const newSearch = e.target.value
+    setSearch(newSearch)
+
+    let _values = [...values]
+    if (newSearch !== '') {
+      _values = _values.filter(row => row.some(value => value.toString().toLowerCase().includes(newSearch.toLowerCase())))
+    }
+    setValues(_values)
+    setResultLength(_values.length)
+  }
+
+  return (
+    <div 
+      className='retable-search-box'
+      style={{
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        gap: '5px',
+      }
+    }>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={search}
+        onChange={handleSearch}
+        className='retable-search-box-input'
+        style={{
+          padding: '8px',
+          border: '1px solid #ccc',
+        }}
+      />
+      <span className='retable-search-box-result'> {resultLength} results</span>
+    </div>
+  )
+}
+
+
 function Table(props) {
   const [settings, setSettings] = React.useState({
     fullWidth: true, // if true, table will take 100% width of parent container
     autoGenerateColumns: true, // if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash)
     pagination: true, // if true, pagination will be enabled
     paginationSize: 10, // number of rows per page
+    searchBox: true, // if true, search will be enabled (search by all columns)
   })
 
   const [columns, setColumns] = React.useState([])
   const [baseValues, setBaseValues] = React.useState([])
   const [values, setValues] = React.useState([])
   const [page, setPage] = React.useState(1)
+  const [pages, setPages] = React.useState(1)
+
+  const extractBaseValues = (data) => {
+    return data.map(item => Object.values(item).map(value => {
+      if (Array.isArray(value)) {
+        return JSON.stringify(value)
+      }
+      return value
+    }))
+  }
+
+  // handle pagination size change affected by search 
+  React.useEffect(() => {
+    const newPages = Math.ceil(baseValues.length / settings.paginationSize)
+    setPages(newPages)
+  }, [baseValues])
 
   React.useEffect(() => {
     const { data } = props  
 
-    if (data == undefined || data.length == 0) {
+    if (data === undefined || data.length === 0) {
       throw new Error('Data must be provided')
     }
 
@@ -33,7 +95,6 @@ function Table(props) {
     })
     
     setSettings(_settings)
-    console.log(_settings)
 
     // handle columns
     let _columns = []
@@ -48,7 +109,7 @@ function Table(props) {
                                 .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') // capitalize first letter of each word
       })
     } else {
-      if (props.columns == undefined || props.columns.length == 0) {
+      if (props.columns === undefined || props.columns.length === 0) {
         throw new Error('Columns must be provided')
       } 
       _columns = props.columns
@@ -56,12 +117,7 @@ function Table(props) {
     setColumns(_columns)
     
     // handle values
-    let _values = data.map(item => Object.values(item).map(value => {
-      if (Array.isArray(value)) {
-        return JSON.stringify(value)
-      }
-      return value
-    }))
+    let _values = extractBaseValues(data)
 
     setBaseValues([..._values])
 
@@ -76,10 +132,10 @@ function Table(props) {
 
   const Thead = () => {
     return (
-      <thead>
-        <tr>
+      <thead className='retable-thead'>
+        <tr className='retable-thead-tr'>
           {columns.length > 0 && columns.map((column, index) => (
-            <th key={index}>{column}</th>
+            <th className='retable-thead-tr-td' key={index}>{column}</th>
           ))}
         </tr>
       </thead>
@@ -88,11 +144,11 @@ function Table(props) {
 
   const Tbody = () => {
     return (
-      <tbody>
+      <tbody className='retable-tbody'>
         {values.length > 0 && values.map((row, index) => (
-          <tr key={index}>
+          <tr className='retable-tbody-tr' key={index}>
             {row.map((value, index) => (
-              <td key={index}>{value}</td>
+              <td className='retable-tbody-tr-td' key={index}>{value}</td>
             ))}
           </tr>
         ))}
@@ -100,59 +156,79 @@ function Table(props) {
     )
   }
 
+  const handlePagination = (newPage, _values) => {
+    _values = _values.slice((newPage - 1) * settings.paginationSize, newPage * settings.paginationSize)
+
+    setPage(newPage)
+    setValues(_values)
+  }
+
   const Pagination = () => {
-    const { paginationSize, data } = props
     const { pagination } = settings
 
     if (pagination === false) {
       return null
     }
 
-    const pages = Math.ceil(data.length / paginationSize)
-
     const handlePageChange = (newPage) => {
-      let _values = [...baseValues]
-      
-      _values = _values.slice((newPage - 1) * paginationSize, newPage * paginationSize)
-      
-      setPage(newPage)
-      setValues(_values)
+      handlePagination(newPage, [...baseValues])
     }
+
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        gap: '5px',
-      }}>
-        <span>{page}/{pages} </span>
-        <button onClick={() => handlePageChange(1)} disabled={page == 1}>{"<<"}</button>
-        <button onClick={() => handlePageChange(page - 1)} disabled={page == 1}>{"<"}</button>
-        <button onClick={() => handlePageChange(page + 1)} disabled={page == pages}>{">"}</button>
-        <button onClick={() => handlePageChange(pages)} disabled={page == pages}>{">>"}</button>
-      </div>
+      <tfoot className='retable-tfoot'>
+        <tr className='retable-tfoot-tr'>
+          <td className='retable-tfoot-tr-td' colSpan={columns.length}>
+            <div 
+              className='retable-pagination'
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+            >
+              <span className='retable-pagination-page'>{page}/{pages} </span>
+              <button className='retable-pagination-button' onClick={() => handlePageChange(1)} disabled={page === 1}>{"<<"}</button>
+              <button className='retable-pagination-button' onClick={() => handlePageChange(page - 1)} disabled={page === 1}>{"<"}</button>
+              <button className='retable-pagination-button' onClick={() => handlePageChange(page + 1)} disabled={page === pages}>{">"}</button>
+              <button className='retable-pagination-button' onClick={() => handlePageChange(pages)} disabled={page === pages}>{">>"}</button>
+            </div>
+          </td>
+        </tr>
+      </tfoot>
     )
   }
 
-  const styles = {
-    table: {
-      width: settings.fullWidth ? '100%' : 'auto',
-    },
+  const handleSearch = (newValues) => {
+    handlePagination(1, newValues)
+    setBaseValues(newValues)
   }
 
+  const Search = (
+    <thead className='retable-thead'>
+      {
+        settings.searchBox === true && 
+        <tr className='retable-thead-tr'>
+          <td className='retable-thead-tr-td' colSpan={columns.length}>
+            <SearchBox values={extractBaseValues(props.data)} setValues={handleSearch} />
+          </td>
+        </tr> 
+      }
+    </thead>
+  )
 
   return (
-    <div>
-      <table style={styles.table}>
+    <div className='retable-table-wrapper'>
+      <table 
+        className='retable-table'
+        style={{
+          width: settings.fullWidth ? '100%' : 'auto',
+        }}
+      >
+        {Search}
         <Thead />
         <Tbody />
-        <tfoot>
-          <tr>
-            <td colSpan={columns.length}>
-              <Pagination />
-            </td>
-          </tr>
-        </tfoot>
+        <Pagination />
       </table>  
     </div>
   )
@@ -161,13 +237,12 @@ function Table(props) {
 
 function App() {
 
-
-
   const data = Array.from(Array(1000).keys()).map(item => ({
     id: item,
     first_name: 'John',
     last_name: 'Doe',
     age: 30,
+    random: Math.round(Math.random() * 10000),
   }))
 
   const columns = [
