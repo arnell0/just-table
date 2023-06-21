@@ -1,14 +1,19 @@
 import React from 'react';
 import './Table.css'
+import { Virtuoso } from 'react-virtuoso'
 
 function Table(props) {
+  const [settings, setSettings] = React.useState({
+    fullWidth: true, // if true, table will take 100% width of parent container
+    autoGenerateColumns: true, // if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash)
+    pagination: true, // if true, pagination will be enabled
+    paginationSize: 10, // number of rows per page
+  })
 
   const [columns, setColumns] = React.useState([])
+  const [baseValues, setBaseValues] = React.useState([])
   const [values, setValues] = React.useState([])
-
-  const [settings, setSettings] = React.useState({
-    autoGenerateColumns: true, // if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash)
-  })
+  const [page, setPage] = React.useState(1)
 
   React.useEffect(() => {
     const { data } = props  
@@ -22,14 +27,18 @@ function Table(props) {
     Object.keys(settings).forEach(key => {
       if (props[key] !== undefined) {
         _settings[key] = props[key]
+      } else {
+        _settings[key] = settings[key]
       }
     })
     
-    setSettings({settings, ..._settings})
+    setSettings(_settings)
+    console.log(_settings)
 
     // handle columns
+    let _columns = []
     if (_settings.autoGenerateColumns === true) {
-      const _columns = Object.keys(data[0])
+      _columns = Object.keys(data[0])
 
       // split by underscore, camel case, dash and capitalize first letter of each word
       _columns.forEach((column, index) => {
@@ -38,22 +47,29 @@ function Table(props) {
                                 .split('-').join(' ') // replace dash with space
                                 .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') // capitalize first letter of each word
       })
-
-      setColumns(_columns)
     } else {
       if (props.columns == undefined || props.columns.length == 0) {
         throw new Error('Columns must be provided')
       } 
-      setColumns(props.columns)
+      _columns = props.columns
     }
-
+    setColumns(_columns)
+    
     // handle values
-    const _values = data.map(item => Object.values(item).map(value => {
+    let _values = data.map(item => Object.values(item).map(value => {
       if (Array.isArray(value)) {
         return JSON.stringify(value)
       }
       return value
     }))
+
+    setBaseValues([..._values])
+
+    // handle pagination
+    if (_settings.pagination === true) {
+      _values = _values.slice((page - 1) * _settings.paginationSize, page * _settings.paginationSize)
+    }
+
     setValues(_values)
 
   }, [props])
@@ -84,12 +100,59 @@ function Table(props) {
     )
   }
 
+  const Pagination = () => {
+    const { paginationSize, data } = props
+    const { pagination } = settings
+
+    if (pagination === false) {
+      return null
+    }
+
+    const pages = Math.ceil(data.length / paginationSize)
+
+    const handlePageChange = (newPage) => {
+      let _values = [...baseValues]
+      
+      _values = _values.slice((newPage - 1) * paginationSize, newPage * paginationSize)
+      
+      setPage(newPage)
+      setValues(_values)
+    }
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: '5px',
+      }}>
+        <span>{page}/{pages} </span>
+        <button onClick={() => handlePageChange(1)} disabled={page == 1}>{"<<"}</button>
+        <button onClick={() => handlePageChange(page - 1)} disabled={page == 1}>{"<"}</button>
+        <button onClick={() => handlePageChange(page + 1)} disabled={page == pages}>{">"}</button>
+        <button onClick={() => handlePageChange(pages)} disabled={page == pages}>{">>"}</button>
+      </div>
+    )
+  }
+
+  const styles = {
+    table: {
+      width: settings.fullWidth ? '100%' : 'auto',
+    },
+  }
+
 
   return (
     <div>
-      <table>
+      <table style={styles.table}>
         <Thead />
         <Tbody />
+        <tfoot>
+          <tr>
+            <td colSpan={columns.length}>
+              <Pagination />
+            </td>
+          </tr>
+        </tfoot>
       </table>  
     </div>
   )
@@ -100,20 +163,12 @@ function App() {
 
 
 
-  const data = [
-    {
-      id: 1,
-      firstName: 'John',
-      last_name: 'Doe',
-      age: 44,
-    },
-    {
-      id: 2,
-      firstName: 'Peter',
-      last_name: 'Parker',
-      age: 12,
-    },
-  ]
+  const data = Array.from(Array(1000).keys()).map(item => ({
+    id: item,
+    first_name: 'John',
+    last_name: 'Doe',
+    age: 30,
+  }))
 
   const columns = [
     'Id',
@@ -128,6 +183,8 @@ function App() {
         data={data}
         autoGenerateColumns={true}
         // columns={columns}
+        pagination={true}
+        paginationSize={10}
       />
     </div>
   );
