@@ -1,7 +1,7 @@
 {
   "name": "just-table",
   "main": "dist/index.min.js",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": false,
   "babel": {
     "presets": [
@@ -42,8 +42,5 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
-  },
-  "dependencies": {
-    "just-table": "^0.2.3"
   }
 }
