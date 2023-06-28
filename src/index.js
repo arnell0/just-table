@@ -41,7 +41,7 @@ function SearchBox(props) {
 
   return (
     <div 
-      className='retable-search-box'
+      className='just-search-box'
       style={{
         display: 'flex',
         justifyContent: 'flex-start',
@@ -54,13 +54,13 @@ function SearchBox(props) {
         placeholder={props.fuzzySearch === true ? 'Fuzzy search...' : 'Search...'}
         value={search}
         onChange={handleSearch}
-        className='retable-search-box-input'
+        className='just-search-box-input'
         style={{
           padding: '8px',
           border: '1px solid #ccc',
         }}
       />
-      <span className='retable-search-box-result'> {resultLength} results</span>
+      <span className='just-search-box-result'> {resultLength} results</span>
     </div>
   )
 }
@@ -164,14 +164,14 @@ function Table(props) {
 
   const Thead = () => {
     return (
-      <thead className='retable-thead' style={{
+      <thead className='just-thead' style={{
         position: settings.stickyHeader === true ? 'sticky' : 'relative',
         top: "-1px",
       }}>
-        <tr className='retable-thead-tr'>
+        <tr className='just-thead-tr'>
           {columns.length > 0 && columns.map((column, index) => (
             <th 
-              className='retable-thead-tr-td' 
+              className='just-thead-tr-td' 
               key={index} 
               onClick={() => handleSort(column)}
               style={{
@@ -182,12 +182,12 @@ function Table(props) {
               {column}
               {
                 sortBy.column === column ? (
-                  <span className='retable-thead-tr-td-sort'>
+                  <span className='just-thead-tr-td-sort'>
                     {sortBy.order === 'asc' ? '▲' : '▼'} 
                   </span>
                 ) 
                 : 
-                <span className='retable-thead-tr-td-sort' style={{
+                <span className='just-thead-tr-td-sort' style={{
                   color: 'transparent',
                 }}>
                   ▲
@@ -202,11 +202,11 @@ function Table(props) {
 
   const Tbody = () => {
     return (
-      <tbody className='retable-tbody'>
+      <tbody className='just-tbody'>
         {values.length > 0 && values.map((row, index) => (
-          <tr className='retable-tbody-tr' key={index}>
+          <tr className='just-tbody-tr' key={index}>
             {row.map((value, index) => (
-              <td className='retable-tbody-tr-td' key={index}>{value}</td>
+              <td className='just-tbody-tr-td' key={index}>{value}</td>
             ))}
           </tr>
         ))}
@@ -250,14 +250,14 @@ function Table(props) {
     }
 
     return (
-      <tfoot className='retable-tfoot' style={{
+      <tfoot className='just-tfoot' style={{
         position: settings.stickyFooter === true ? 'sticky' : 'relative',
         bottom: "-1px",
       }}>
-        <tr className='retable-tfoot-tr'>
-          <td className='retable-tfoot-tr-td' colSpan={columns.length}>
+        <tr className='just-tfoot-tr'>
+          <td className='just-tfoot-tr-td' colSpan={columns.length}>
             <div 
-              className='retable-pagination'
+              className='just-pagination'
               style={{
                 display: 'flex',
                 justifyContent: 'flex-end',
@@ -265,9 +265,9 @@ function Table(props) {
                 gap: '5px',
               }}
             >
-              <span className='retable-pagination-page'>Rows per page: </span>
+              <span className='just-pagination-page'>Rows per page: </span>
               <select
-                className='retable-pagination-select'
+                className='just-pagination-select'
                 onChange={(e) => handleRowsPerPageChange(e.target.value)}
                 value={settings.paginationSize}
               >
@@ -276,11 +276,11 @@ function Table(props) {
                 ))}
               </select>
 
-              <span className='retable-pagination-page'>{page}/{pages} </span>
-              <button className='retable-pagination-button' onClick={() => handlePageChange(1)} disabled={page === 1}>{"<<"}</button>
-              <button className='retable-pagination-button' onClick={() => handlePageChange(page - 1)} disabled={page === 1}>{"<"}</button>
-              <button className='retable-pagination-button' onClick={() => handlePageChange(page + 1)} disabled={page === pages}>{">"}</button>
-              <button className='retable-pagination-button' onClick={() => handlePageChange(pages)} disabled={page === pages}>{">>"}</button>
+              <span className='just-pagination-page'>{page}/{pages} </span>
+              <button className='just-pagination-button' onClick={() => handlePageChange(1)} disabled={page === 1}>{"<<"}</button>
+              <button className='just-pagination-button' onClick={() => handlePageChange(page - 1)} disabled={page === 1}>{"<"}</button>
+              <button className='just-pagination-button' onClick={() => handlePageChange(page + 1)} disabled={page === pages}>{">"}</button>
+              <button className='just-pagination-button' onClick={() => handlePageChange(pages)} disabled={page === pages}>{">>"}</button>
             </div>
           </td>
         </tr>
@@ -322,11 +322,11 @@ function Table(props) {
   }
 
   const Search = (
-    <thead className='retable-thead'>
+    <thead className='just-thead'>
       {
         settings.search === true && 
-        <tr className='retable-thead-tr'>
-          <td className='retable-thead-tr-td' colSpan={columns.length}>
+        <tr className='just-thead-tr'>
+          <td className='just-thead-tr-td' colSpan={columns.length}>
             <SearchBox values={extractBaseValues(props.data)} setValues={handleSearch} fuzzySearch={settings.fuzzySearch} />
           </td>
         </tr> 
@@ -335,9 +335,9 @@ function Table(props) {
   )
 
   return (
-    <div className='retable-table-wrapper'>
+    <div className='just-wrapper'>
       <table 
-        className='retable-table'
+        className='just-table'
         style={{
           width: settings.fullWidth ? '100%' : 'auto',
         }}
@@ -415,3 +415,24 @@ function areArgsValid(mainString, targetStrings) {
 	if (targetStrings.find( function (s) { return typeof s !== 'string'})) return false;
 	return true;
 }
+
+
+// all css classes
+// just-wrapper
+// just-table
+// just-thead
+// just-thead-tr
+// just-thead-tr-td
+// just-tbody
+// just-tbody-tr
+// just-tbody-tr-td
+// just-tfoot
+// just-tfoot-tr
+// just-tfoot-tr-td
+// just-pagination
+// just-pagination-page
+// just-pagination-select
+// just-pagination-button
+// just-search-box
+// just-search-box-input
+// just-search-box-result

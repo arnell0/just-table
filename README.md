@@ -2,7 +2,6 @@
 A simple React table component that just works.  
 
 
-
 | Parameter | Default Value | Comment |
 | --- | --- | --- |
 | data | [] | array of objects |
@@ -15,6 +14,7 @@ A simple React table component that just works.
 | fuzzySearch | false | if true, fuzzy search will be enabled (allow typos and such) (search by all columns) |
 | stickyHeader | true | if true, header will be sticky |
 | stickyFooter | true | if true, footer will be sticky |
+| styled | false | if true, table will be styled with base styling |
 
 # example
 ```javascript
@@ -51,6 +51,31 @@ const columns = [
 
 const JustTable = () => <Table data={data} columns={columns} />
 ```
+
+# styling
+Styling is simple, if you want to style table, you can pass styled prop to table component and it will be styled with base styling. If you want to style table yourself, you can target the following classes and style them as you wish. Or you can target the table and style it yourself.
+
+classes:
+- just-wrapper
+- just-table
+- just-thead
+- just-thead-tr
+- just-thead-tr-td
+- just-tbody
+- just-tbody-tr
+- just-tbody-tr-td
+- just-tfoot
+- just-tfoot-tr
+- just-tfoot-tr-td
+- just-pagination
+- just-pagination-page
+- just-pagination-select
+- just-pagination-button
+- just-search-box
+- just-search-box-input
+- just-search-box-result
+
+
 
 
 # TODO
