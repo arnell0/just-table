@@ -415,24 +415,3 @@ function areArgsValid(mainString, targetStrings) {
 	if (targetStrings.find( function (s) { return typeof s !== 'string'})) return false;
 	return true;
 }
-
-
-// all css classes
-// just-wrapper
-// just-table
-// just-thead
-// just-thead-tr
-// just-thead-tr-td
-// just-tbody
-// just-tbody-tr
-// just-tbody-tr-td
-// just-tfoot
-// just-tfoot-tr
-// just-tfoot-tr-td
-// just-pagination
-// just-pagination-page
-// just-pagination-select
-// just-pagination-button
-// just-search-box
-// just-search-box-input
-// just-search-box-result
