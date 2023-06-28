@@ -1,7 +1,7 @@
 {
   "name": "just-table",
   "main": "dist/index.min.js",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": false,
   "babel": {
     "presets": [
@@ -14,7 +14,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "minify": "minify dist/index.js > dist/index.min.js && rm dist/index.js",
-    "pre-publish": "rm -rf dist && mkdir dist &&  babel src/just-table -d dist --copy-files && npm run minify && npm uninstall just-table && npm install"
+    "pre-publish": "rm -rf dist && mkdir dist &&  babel src -d dist --copy-files && npm run minify && npm uninstall just-table && npm install"
   },
   "eslintConfig": {
     "extends": [

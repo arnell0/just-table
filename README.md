@@ -52,9 +52,6 @@ const columns = [
 const JustTable = () => <Table data={data} columns={columns} />
 ```
 
-![Alt text](image.png)
-
-
 
 # TODO
 - [x] pagination
