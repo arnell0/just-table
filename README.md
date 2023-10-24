@@ -1,7 +1,6 @@
 # just-table
 A simple React table component that just works.  
 
-
 | Parameter | Default Value | Comment |
 | --- | --- | --- |
 | data | [] | array of objects |
@@ -11,10 +10,13 @@ A simple React table component that just works.
 | pagination | true | if true, pagination will be enabled |
 | paginationSize | 10 | number of rows per page (pagination have to be enabled) |
 | search | true | if true, search will be enabled (search by all columns) |
-| fuzzySearch | false | if true, fuzzy search will be enabled (allow typos and such) (search by all columns) |
 | stickyHeader | true | if true, header will be sticky |
 | stickyFooter | true | if true, footer will be sticky |
 | styled | false | if true, table will be styled with base styling |
+| onRowClick | (row) => {} | function to be called when row is expanded |
+| onRowCreate | () => {} | function to be called when row is created |
+| onColumnClick | (column) => {} | function to be called when column is expanded |
+| onColumnCreate | () => {} | function to be called when column is created |
 
 # example
 ```javascript
@@ -76,8 +78,6 @@ classes:
 - just-search-box-result
 
 
-
-
 # TODO
 - [x] pagination
 - [x] search
@@ -85,13 +85,15 @@ classes:
 - [x] rows per page
 - [x] sticky header and footer
 - [x] sort columns
-- [x] fuzzy search
+- [x] onRowClick
+- [x] onRowCreate
+- [x] onColumnClick
+- [x] onColumnCreate
 - [ ] select rows
-- [ ] crud rows
 - [ ] 
+- [ ] filter columns
 - [ ] change all buttons to icons if user sets icons=true
 - [ ] virtualize
-- [ ] filter columns
 - [ ] handle nested data
 
 

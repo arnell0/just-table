@@ -1,417 +1,399 @@
 import React from 'react';
 import './styles.css'
 
+const icons_expand = <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="sbui-icon "><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+const icons_plus = <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="sbui-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+
 function SearchBox(props) {
-  const { values, setValues } = props
+	const { values, setValues } = props
 
-  const [search, setSearch] = React.useState('')
-  const [resultLength, setResultLength] = React.useState(values.length)
+	const [search, setSearch] = React.useState('')
+	const [resultLength, setResultLength] = React.useState(values.length)
 
-  const handleSearch = (e) => {
-    const newSearch = e.target.value
-    setSearch(newSearch)
+	const handleSearch = (e) => {
+		const newSearch = e.target.value
+		setSearch(newSearch)
 
-    let _values = [...values]
+		let _values = [...values] 
 
-    if (newSearch !== '') {
-      if (props.fuzzySearch === true) {
-        let matchArray = []
+		if (newSearch !== '') {
+			_values = _values.filter(row => row.some(value => value.toString().toLowerCase().includes(newSearch.toLowerCase())))
+		}
 
-        _values = _values.filter(row => row.some(value => {
-          const result = compareTwoStrings(value.toString().toLowerCase(), newSearch.toLowerCase())
-          matchArray.push(result)
-          return result > 0.5
-        }))
+		setValues(_values)
+		setResultLength(_values.length)
+	}
 
-        // sort by match
-        const sortedMatchArray = [...matchArray].sort((a, b) => b - a)
-        _values = _values.sort((a, b) => {
-          const aIndex = matchArray.indexOf(sortedMatchArray.find(item => item === matchArray[matchArray.indexOf(a)]))
-          const bIndex = matchArray.indexOf(sortedMatchArray.find(item => item === matchArray[matchArray.indexOf(b)]))
-          return aIndex - bIndex
-        })
-
-      } else { 
-        _values = _values.filter(row => row.some(value => value.toString().toLowerCase().includes(newSearch.toLowerCase())))
-      }
-    }
-    setValues(_values)
-    setResultLength(_values.length)
-  }
-
-  return (
-    <div 
-      className='just-search-box'
-      style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        gap: '5px',
-      }
-    }>
-      <input
-        type="text"
-        placeholder={props.fuzzySearch === true ? 'Fuzzy search...' : 'Search...'}
-        value={search}
-        onChange={handleSearch}
-        className='just-search-box-input'
-        style={{
-          padding: '8px',
-          border: '1px solid #ccc',
-        }}
-      />
-      <span className='just-search-box-result'> {resultLength} results</span>
-    </div>
-  )
+	return (
+		<div 
+			class='just-search-box'
+			style={{
+				display: 'flex',
+				justifyContent: 'flex-start',
+				alignItems: 'center',
+				gap: '5px',
+			}
+		}>
+			<input
+				type="text"
+				placeholder='Search...'
+				value={search}
+				onInput={handleSearch}
+				style={{
+					padding: '8px',
+					border: '1px solid #ccc',
+				}}
+			/>
+			<span> {resultLength} results</span>
+		</div>
+	)
 }
 
 
 function Table(props) {
-  const [settings, setSettings] = React.useState({
-    fullWidth: true, // if true, table will take 100% width of parent container
-    autoGenerateColumns: true, // if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash)
-    pagination: true, // if true, pagination will be enabled
-    paginationSize: 10, // number of rows per page
-    search: true, // if true, search will be enabled (search by all columns)
-    fuzzySearch: false, // if true, fuzzy search will be enabled (allow typos and such)
-    stickyHeader: true, // if true, header will be sticky
-    stickyFooter: true, // if true, footer will be sticky
-  })
+	const [settings, setSettings] = React.useState({
+		fullWidth: true, // if true, table will take 100% width of parent container
+		autoGenerateColumns: true, // if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash)
+		pagination: true, // if true, pagination will be enabled
+		paginationSize: 10, // number of rows per page
+		search: true, // if true, search will be enabled (search by all columns)
+		stickyHeader: true, // if true, header will be sticky
+		stickyFooter: true, // if true, footer will be sticky
+		onRowClick: (row) => {}, // function to be called when row is expanded
+		onColumnClick: (column) => {}, // function to be called when column is expanded
+		onColumnCreate: () => {}, // function to be called when column is created
+	})
 
-  const [columns, setColumns] = React.useState([])
-  const [baseValues, setBaseValues] = React.useState([])
-  const [values, setValues] = React.useState([])
-  const [page, setPage] = React.useState(1)
-  const [pages, setPages] = React.useState(1)
-  const [sortBy, setSortBy] = React.useState({
-    column: '',
-    order: 'desc',
-  })
+	const [columns, setColumns] = React.useState([])
+	const [baseValues, setBaseValues] = React.useState([])
+	const [values, setValues] = React.useState([])
+	const [page, setPage] = React.useState(1)
+	const [pages, setPages] = React.useState(1)
+	const [sortBy, setSortBy] = React.useState({
+		column: '',
+		order: 'desc',
+	})
 
-  const extractBaseValues = (data) => {
-    return data.map(item => Object.values(item).map(value => {
-      if (Array.isArray(value)) {
-        return JSON.stringify(value)
-      }
-      return value
-    }))
-  }
+	const extractBaseValues = (data) => {
+		return data.map(item => Object.values(item).map(value => {
+			if (Array.isArray(value)) {
+				return JSON.stringify(value)
+			}
+			return value
+		}))
+	}
 
-  // handle pagination size change affected by search 
-  React.useEffect(() => {
-    const newPages = Math.ceil(baseValues.length / settings.paginationSize)
-    setPages(newPages)
-  }, [baseValues])
+	// handle pagination size change affected by search 
+	React.useEffect(() => {
+		const newPages = Math.ceil(baseValues.length / settings.paginationSize)
+		setPages(newPages)
+	}, [baseValues])
 
-  React.useEffect(() => {
-    const { data } = props  
+	React.useEffect(() => {
+		const { data } = props  
 
-    if (data === undefined || data.length === 0) {
-      throw new Error('Data must be provided')
-    }
+		if (data === undefined || data.length === 0) {
+			throw new Error('Data must be provided')
+		}
 
-    // handle settings
-    const _settings = {}
-    Object.keys(settings).forEach(key => {
-      if (props[key] !== undefined) {
-        _settings[key] = props[key]
-      } else {
-        _settings[key] = settings[key]
-      }
-    })
-    
-    setSettings(_settings)
+		// handle settings
+		const _settings = {}
+		Object.keys(settings).forEach(key => {
+			if (props[key] !== undefined) {
+				_settings[key] = props[key]
+			} else {
+				_settings[key] = settings[key]
+			}
+		})
 
-    // handle columns
-    let _columns = []
-    if (_settings.autoGenerateColumns === true) {
-      _columns = Object.keys(data[0])
+		setSettings(_settings)
 
-      // split by underscore, camel case, dash and capitalize first letter of each word
-      _columns.forEach((column, index) => {
-        _columns[index] = column.split('_').join(' ') // replace underscore with space
-                                .replace(/([A-Z])/g, ' $1') // split by capital letter
-                                .split('-').join(' ') // replace dash with space
-                                .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') // capitalize first letter of each word
-      })
-    } else {
-      if (props.columns === undefined || props.columns.length === 0) {
-        throw new Error('Columns must be provided')
-      } 
-      _columns = props.columns
-    }
-    setColumns(_columns)
-    
-    // handle values
-    let _values = extractBaseValues(data)
+		// handle columns
+		let _columns = []
+		if (_settings.autoGenerateColumns === true && props.columns.length === 0) {
+		_columns = Object.keys(data[0])
 
-    setBaseValues([..._values])
+		// split by underscore, camel case, dash and capitalize first letter of each word
+		_columns.forEach((column, index) => {
+			_columns[index] = column.split('_').join(' ') // replace underscore with space
+			.replace(/([A-Z])/g, ' $1') // split by capital letter
+			.split('-').join(' ') // replace dash with space
+			.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') // capitalize first letter of each word
+			})
+		} else {
+			if (props.columns === undefined || props.columns.length === 0) {
+				throw new Error('Columns must be provided')
+			} 
+			_columns = props.columns
+		}
+		setColumns(_columns)
 
-    // handle pagination
-    if (_settings.pagination === true) {
-      _values = _values.slice((page - 1) * _settings.paginationSize, page * _settings.paginationSize)
-    }
+		// handle values
+		let _values = extractBaseValues(data)
 
-    setValues(_values)
+		setBaseValues([..._values])
 
-    let mainString = 'Hello World'
-    let targetStrings = ['Helo Wrld', 'Hello World', 'Hello World!']
-    let result = findBestMatch(mainString, targetStrings)
-    console.log(result)
+		// handle pagination
+		if (_settings.pagination === true) {
+			_values = _values.slice((page - 1) * _settings.paginationSize, page * _settings.paginationSize)
+		}
 
+		setValues(_values)
+	}, [props])
 
-  }, [props])
+	const handleColumnClick = (column) => {
+		settings.onColumnClick(column)
+	}
 
-  const Thead = () => {
-    return (
-      <thead className='just-thead' style={{
-        position: settings.stickyHeader === true ? 'sticky' : 'relative',
-        top: "-1px",
-      }}>
-        <tr className='just-thead-tr'>
-          {columns.length > 0 && columns.map((column, index) => (
-            <th 
-              className='just-thead-tr-td' 
-              key={index} 
-              onClick={() => handleSort(column)}
-              style={{
-                cursor: 'pointer',
-                userSelect: 'none',
-              }}
-            >
-              {column}
-              {
-                sortBy.column === column ? (
-                  <span className='just-thead-tr-td-sort'>
-                    {sortBy.order === 'asc' ? '▲' : '▼'} 
-                  </span>
-                ) 
-                : 
-                <span className='just-thead-tr-td-sort' style={{
-                  color: 'transparent',
-                }}>
-                  ▲
-                </span>
-              }
-            </th>
-          ))}
-        </tr>
-      </thead>
-    )
-  }
+	const handleColumnCreate = () => {
+		settings.onColumnCreate()
+	}
 
-  const Tbody = () => {
-    return (
-      <tbody className='just-tbody'>
-        {values.length > 0 && values.map((row, index) => (
-          <tr className='just-tbody-tr' key={index}>
-            {row.map((value, index) => (
-              <td className='just-tbody-tr-td' key={index}>{value}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    )
-  }
+	const Thead = () => {
+		return (
+			<thead style={{
+				position: settings.stickyHeader === true ? 'sticky' : 'relative',
+			}}>
+				<tr>
+					<th>
+						<div>
+							<input type="checkbox" name="" id="" />
+						</div>
+					</th>
+					{columns.length > 0 && columns.map((column, index) => (
+						<th key={index}>
+							<div>
+								<div>
+									<div onClick={() => handleSort(column)}>
+										{column} &nbsp;
+									</div>
+									{
+										sortBy.column === column && (
+											<div>
+												{sortBy.order === 'asc' ? '↑' : '↓'} 
+											</div>
+										)
+									}
+								</div>
 
-  const handlePagination = (newPage, _values, newPaginationSize) => {
-    let paginationSize = settings.paginationSize
+								<div class="icon expand" onClick={() => handleColumnClick(column)}>{icons_expand}</div>
+							</div>
+						</th>
+					))}
+					<th>
+						<div style={{
+							justifyContent: 'center',
+						}}>
+							<div class="icon expand" onClick={handleColumnCreate}>{icons_plus}</div>
+						</div>
+					</th>
+				</tr>
+			</thead>
+		)
+	}
 
-    if (newPaginationSize !== undefined) {
-      paginationSize = newPaginationSize
-    }
+	const handleRowClick = (row) => {
+		// find row in baseValues
+		const baseIndex = baseValues.findIndex(baseRow => baseRow === row)
 
-    _values = _values.slice((newPage - 1) * paginationSize, newPage * paginationSize)
+		if (baseIndex === -1) {
+			return
+		}
 
-    setPage(newPage)
-    setValues(_values)
-  }
+		const dataRow = props.data[baseIndex]
+		props.onRowClick(dataRow)
+	}
 
-  const Pagination = () => {
-    const { pagination } = settings
+	const handleRowCreate = () => {
+		props.onRowCreate()
+	}
 
-    if (pagination === false) {
-      return null
-    }
+	const Tbody = () => {
+		return (
+			<tbody >
+				{values.length > 0 && values.map((row, index) => (
+					<tr key={index}>
+						<td>
+							<input type="checkbox" name="" id="" />
+							<div class="icon expand" onClick={() =>- handleRowClick(row)}>{icons_expand}</div>
+						</td>
+						
+						{row.map((value, index) => (
+							<td key={index}>{value}</td>
+						))}
 
-    const handlePageChange = (newPage) => {
-      handlePagination(newPage, [...baseValues])
-    }
+						<td>
+							
+						</td>
+					</tr>
+				))}
 
-    const handleRowsPerPageChange = (newPaginationSize) => {
-      const newPages = Math.ceil(baseValues.length / newPaginationSize)
-      setPages(newPages)
+				<tr>
+					<td>
+						<div style={{
+							margin: '0 auto',
+						}}>
+							<div class="icon expand" onClick={handleRowCreate}>{icons_plus}</div>
+						</div>
+					</td>
 
-      const newSettings = {...settings}
-      newSettings.paginationSize = newPaginationSize
-      setSettings(newSettings)
+					{columns.length > 0 && columns.map((column, index) => (
+						<td key={index}>
+							
+						</td>
+					))}
+				</tr>
+			</tbody>
+		)
+	}
 
-      handlePagination(1, [...baseValues], newPaginationSize  )
-    }
+	const handlePagination = (newPage, _values, newPaginationSize) => {
+		let paginationSize = settings.paginationSize
 
-    return (
-      <tfoot className='just-tfoot' style={{
-        position: settings.stickyFooter === true ? 'sticky' : 'relative',
-        bottom: "-1px",
-      }}>
-        <tr className='just-tfoot-tr'>
-          <td className='just-tfoot-tr-td' colSpan={columns.length}>
-            <div 
-              className='just-pagination'
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              <span className='just-pagination-page'>Rows per page: </span>
-              <select
-                className='just-pagination-select'
-                onChange={(e) => handleRowsPerPageChange(e.target.value)}
-                value={settings.paginationSize}
-              >
-                {[5, 10, 20, 50, 100].map((value, index) => (
-                  <option key={index} value={value}>{value}</option>
-                ))}
-              </select>
+		if (newPaginationSize !== undefined) {
+			paginationSize = newPaginationSize
+		}
 
-              <span className='just-pagination-page'>{page}/{pages} </span>
-              <button className='just-pagination-button' onClick={() => handlePageChange(1)} disabled={page === 1}>{"<<"}</button>
-              <button className='just-pagination-button' onClick={() => handlePageChange(page - 1)} disabled={page === 1}>{"<"}</button>
-              <button className='just-pagination-button' onClick={() => handlePageChange(page + 1)} disabled={page === pages}>{">"}</button>
-              <button className='just-pagination-button' onClick={() => handlePageChange(pages)} disabled={page === pages}>{">>"}</button>
-            </div>
-          </td>
-        </tr>
-      </tfoot>
-    )
-  }
+		_values = _values.slice((newPage - 1) * paginationSize, newPage * paginationSize)
 
-  const handleSearch = (newValues) => {
-    handlePagination(1, newValues)
-    setBaseValues(newValues)
-  }
+		setPage(newPage)
+		setValues(_values)
+	}
 
-  const handleSort = (column) => {
-    let _baseValues = [...baseValues]
-    let _sortBy = {...sortBy}
+	const Pagination = () => {
+		const { pagination } = settings
 
-    if (column === sortBy.column) {
-      _sortBy.order = sortBy.order === 'asc' ? 'desc' : 'asc'
-    } else {
-      _sortBy.column = column
-      _sortBy.order = 'asc'
-    }
+		if (pagination === false) {
+		return null
+		}
 
-    setSortBy(_sortBy)
+		const handlePageChange = (newPage) => {
+		handlePagination(newPage, [...baseValues])
+		}
 
-    const columnIndex = columns.indexOf(column)
-    _baseValues.sort((a, b) => {
-      if (a[columnIndex] < b[columnIndex]) {
-        return _sortBy.order === 'asc' ? -1 : 1
-      }
-      if (a[columnIndex] > b[columnIndex]) {
-        return _sortBy.order === 'asc' ? 1 : -1
-      }
-      return 0
-    })
+		const handleRowsPerPageChange = (newPaginationSize) => {
+		const newPages = Math.ceil(baseValues.length / newPaginationSize)
+		setPages(newPages)
 
-    handlePagination(1, _baseValues)
-    setBaseValues(_baseValues)
-  }
+		const newSettings = {...settings}
+		newSettings.paginationSize = newPaginationSize
+		setSettings(newSettings)
 
-  const Search = (
-    <thead className='just-thead'>
-      {
-        settings.search === true && 
-        <tr className='just-thead-tr'>
-          <td className='just-thead-tr-td' colSpan={columns.length}>
-            <SearchBox values={extractBaseValues(props.data)} setValues={handleSearch} fuzzySearch={settings.fuzzySearch} />
-          </td>
-        </tr> 
-      }
-    </thead>
-  )
+		handlePagination(1, [...baseValues], newPaginationSize  )
+		}
 
-  return (
-    <div className='just-wrapper'>
-      <table 
-        className='just-table'
-        style={{
-          width: settings.fullWidth ? '100%' : 'auto',
-        }}
-      >
-        {Search}
-        <Thead />
-        <Tbody />
-        <Pagination />
-      </table>  
-    </div>
-  )
+		return (
+			<tfoot style={{
+				position: settings.stickyFooter === true ? 'sticky' : 'relative',
+				bottom: "-1px",
+			}}>
+				<tr>
+					<td colSpan={columns.length + 1}>
+						<div 
+							style={{
+							display: 'flex',
+							justifyContent: 'flex-end',
+							alignItems: 'center',
+							gap: '5px',
+							}}
+						>
+							<span>Rows per page: </span>
+							<select
+								onChange={(e) => handleRowsPerPageChange(e.target.value)}
+								value={settings.paginationSize}
+							>
+							{[5, 10, 20, 50, 100].map((value, index) => (
+								<option key={index} value={value}>{value}</option>
+							))}
+							</select>
+
+							<span>{page}/{pages} </span>
+							<button onClick={() => handlePageChange(1)} disabled={page === 1}>{"<<"}</button>
+							<button onClick={() => handlePageChange(page - 1)} disabled={page === 1}>{"<"}</button>
+							<button onClick={() => handlePageChange(page + 1)} disabled={page === pages}>{">"}</button>
+							<button onClick={() => handlePageChange(pages)} disabled={page === pages}>{">>"}</button>
+						</div>
+					</td>
+				</tr>
+			</tfoot>
+		)
+	}
+
+	const handleSearch = (newValues) => {
+		handlePagination(1, newValues)
+		setBaseValues(newValues)
+	}
+
+	const handleSort = (column) => {
+		let _baseValues = [...baseValues]
+		let _sortBy = {...sortBy}
+
+		if (column === sortBy.column) {
+			_sortBy.order = sortBy.order === 'asc' ? 'desc' : 'asc'
+		} else {
+			_sortBy.column = column
+			_sortBy.order = 'asc'
+		}
+
+		setSortBy(_sortBy)
+
+		const columnIndex = columns.indexOf(column)
+		_baseValues.sort((a, b) => {
+			if (a[columnIndex] < b[columnIndex]) {
+				return _sortBy.order === 'asc' ? -1 : 1
+			}
+			if (a[columnIndex] > b[columnIndex]) {
+				return _sortBy.order === 'asc' ? 1 : -1
+			}
+			return 0
+		})
+
+		handlePagination(1, _baseValues)
+		setBaseValues(_baseValues)
+	}
+
+	const Search = (
+		<thead>
+			{
+				settings.search === true && 
+				<tr>
+					<td colSpan={columns.length + 1}>
+						<div style={{
+							display: 'flex',
+							alignItems: 'center',
+							gap: '20px',
+						}}>
+							<SearchBox values={extractBaseValues(props.data)} setValues={handleSearch} />
+							<button 
+								variant='contained'
+								color='success'
+								onClick={handleRowCreate}
+								size='slim'
+							>
+								Insert row
+							</button>
+						</div>
+					</td>
+				</tr> 
+			}
+		</thead>
+	)
+
+	return (
+		<div class='just-wrapper'>
+			<table 
+				class='just-table'
+				style={{
+				width: settings.fullWidth ? '100%' : 'auto',
+			}}
+			>
+				{Search}
+				<Thead />
+				<Tbody />
+				<Pagination />
+			</table>  
+		</div>
+	)
 }
 
 export default Table
-
-// taken from https://github.com/aceakash/string-similarity
-function compareTwoStrings(first, second) {
-	first = first.replace(/\s+/g, '')
-	second = second.replace(/\s+/g, '')
-
-	if (first === second) return 1; // identical or empty
-	if (first.length < 2 || second.length < 2) return 0; // if either is a 0-letter or 1-letter string
-
-	let firstBigrams = new Map();
-	for (let i = 0; i < first.length - 1; i++) {
-		const bigram = first.substring(i, i + 2);
-		const count = firstBigrams.has(bigram)
-			? firstBigrams.get(bigram) + 1
-			: 1;
-
-		firstBigrams.set(bigram, count);
-	};
-
-	let intersectionSize = 0;
-	for (let i = 0; i < second.length - 1; i++) {
-		const bigram = second.substring(i, i + 2);
-		const count = firstBigrams.has(bigram)
-			? firstBigrams.get(bigram)
-			: 0;
-
-		if (count > 0) {
-			firstBigrams.set(bigram, count - 1);
-			intersectionSize++;
-		}
-	}
-
-	return (2.0 * intersectionSize) / (first.length + second.length - 2);
-}
-
-function findBestMatch(mainString, targetStrings) {
-	if (!areArgsValid(mainString, targetStrings)) throw new Error('Bad arguments: First argument should be a string, second should be an array of strings');
-	
-	const ratings = [];
-	let bestMatchIndex = 0;
-
-	for (let i = 0; i < targetStrings.length; i++) {
-		const currentTargetString = targetStrings[i];
-		const currentRating = compareTwoStrings(mainString, currentTargetString)
-		ratings.push({target: currentTargetString, rating: currentRating})
-		if (currentRating > ratings[bestMatchIndex].rating) {
-			bestMatchIndex = i
-		}
-	}
-	
-	
-	const bestMatch = ratings[bestMatchIndex]
-	
-	return { ratings: ratings, bestMatch: bestMatch, bestMatchIndex: bestMatchIndex };
-}
-
-function areArgsValid(mainString, targetStrings) {
-	if (typeof mainString !== 'string') return false;
-	if (!Array.isArray(targetStrings)) return false;
-	if (!targetStrings.length) return false;
-	if (targetStrings.find( function (s) { return typeof s !== 'string'})) return false;
-	return true;
-}
