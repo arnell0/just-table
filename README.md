@@ -1,22 +1,7 @@
 # just-table
 A simple React table component that just works.  
 
-| Parameter | Default Value | Comment |
-| --- | --- | --- |
-| data | [] | array of objects |
-| columns | [] | array of objects |
-| fullWidth | true | if true, table will take 100% width of parent container |
-| autoGenerateColumns | true | if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash) |
-| pagination | true | if true, pagination will be enabled |
-| paginationSize | 10 | number of rows per page (pagination have to be enabled) |
-| search | true | if true, search will be enabled (search by all columns) |
-| stickyHeader | true | if true, header will be sticky |
-| stickyFooter | true | if true, footer will be sticky |
-| styled | false | if true, table will be styled with base styling |
-| onRowClick | (row) => {} | function to be called when row is expanded |
-| onRowCreate | () => {} | function to be called when row is created |
-| onColumnClick | (column) => {} | function to be called when column is expanded |
-| onColumnCreate | () => {} | function to be called when column is created |
+[https://github.com/arnell0/just-table](Github)
 
 # example
 ```javascript
@@ -67,6 +52,24 @@ const JustTable = () => <Table data={data} columns={columns} />
 ```
 
 ![example screenshot](https://github.com/arnell0/just-table/blob/main/screenshot.png?raw=true)
+
+| Parameter | Default Value | Comment |
+| --- | --- | --- |
+| data | [] | array of objects |
+| columns | [] | array of objects |
+| fullWidth | true | if true, table will take 100% width of parent container |
+| autoGenerateColumns | true | if true, columns will be generated from data keys, if false, columns must be provided (camel case, underscore, dash) |
+| pagination | true | if true, pagination will be enabled |
+| paginationSize | 10 | number of rows per page (pagination have to be enabled) |
+| search | true | if true, search will be enabled (search by all columns) |
+| stickyHeader | true | if true, header will be sticky |
+| stickyFooter | true | if true, footer will be sticky |
+| styled | false | if true, table will be styled with base styling |
+| onRowClick | (row) => {} | function to be called when row is expanded |
+| onRowCreate | () => {} | function to be called when row is created |
+| onColumnClick | (column) => {} | function to be called when column is expanded |
+| onColumnCreate | () => {} | function to be called when column is created |
+
 
 # styling
 Styling is simple, if you want to style table, you can pass styled prop to table component and it will be styled with base styling. If you want to style table yourself, you can target the native HTML elements under the class "just-table" eg. 
