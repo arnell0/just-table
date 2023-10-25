@@ -35,6 +35,18 @@ const data = [
         'surname': 'Doe',
         'age': 23,
     },
+    {
+        'id': 3,
+        'name': 'John',
+        'surname': 'Smith',
+        'age': 30,
+    },
+    {
+        'id': 4,
+        'name': 'Jane',
+        'surname': 'Smith',
+        'age': 28,
+    },
 ]
 
 // columns can be generated from data keys (camel case, underscore, dash) if autoGenerateColumns is true or columns can be provided manually
@@ -54,29 +66,20 @@ const columns = [
 const JustTable = () => <Table data={data} columns={columns} />
 ```
 
+![example screenshot](https://github.com/arnell0/just-table/blob/main/screenshot.png?raw=true)
+
 # styling
-Styling is simple, if you want to style table, you can pass styled prop to table component and it will be styled with base styling. If you want to style table yourself, you can target the following classes and style them as you wish. Or you can target the table and style it yourself.
+Styling is simple, if you want to style table, you can pass styled prop to table component and it will be styled with base styling. If you want to style table yourself, you can target the native HTML elements under the class "just-table" eg. 
+
+```css
+.just-table > table > tr > td {
+    padding: 10px;
+}
+```
 
 classes:
 - just-wrapper
 - just-table
-- just-thead
-- just-thead-tr
-- just-thead-tr-td
-- just-tbody
-- just-tbody-tr
-- just-tbody-tr-td
-- just-tfoot
-- just-tfoot-tr
-- just-tfoot-tr-td
-- just-pagination
-- just-pagination-page
-- just-pagination-select
-- just-pagination-button
-- just-search-box
-- just-search-box-input
-- just-search-box-result
-
 
 # TODO
 - [x] pagination
@@ -89,8 +92,8 @@ classes:
 - [x] onRowCreate
 - [x] onColumnClick
 - [x] onColumnCreate
+- [ ] base styling setting
 - [ ] select rows
-- [ ] 
 - [ ] filter columns
 - [ ] change all buttons to icons if user sets icons=true
 - [ ] virtualize
